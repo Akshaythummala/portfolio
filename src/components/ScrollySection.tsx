@@ -5,7 +5,7 @@ import ScrollyCanvas from "./ScrollyCanvas";
 import Overlay from "./Overlay";
 
 /** Scroll distance for the full frame sequence (~5.5 screens) */
-const SCROLLY_HEIGHT_VH = 800;
+const SCROLLY_HEIGHT_VH = 850;
 
 export default function ScrollySection() {
   const containerRef = useRef<HTMLDivElement>(null);
