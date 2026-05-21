@@ -3,10 +3,13 @@
 import { useEffect, useRef, useCallback } from "react";
 import {
   useScroll,
-  useAnimationFrame,
+  useTransform,
+  useMotionValueEvent,
 } from "framer-motion";
 
 const TOTAL_FRAMES = 110;
+const PRELOAD_AHEAD = 12;
+const PRELOAD_BEHIND = 4;
 
 function getFrameUrl(index: number): string {
   const padded = String(index).padStart(3, "0");
@@ -19,14 +22,48 @@ interface Props {
 
 export default function ScrollyCanvas({ containerRef }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imagesRef = useRef<HTMLImageElement[]>([]);
+  const imagesRef = useRef<(HTMLImageElement | undefined)[]>([]);
+  const loadingRef = useRef<Set<number>>(new Set());
   const currentFrameRef = useRef(0);
-  const lastDrawnRef = useRef(-1);
+  const rafRef = useRef<number | null>(null);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
+
+  const frameIndex = useTransform(
+    scrollYProgress,
+    [0, 1],
+    [0, TOTAL_FRAMES - 1]
+  );
+
+  const scheduleFrameRef = useRef<(index: number) => void>(() => {});
+
+  const ensureFrameLoaded = useCallback((index: number) => {
+    const i = Math.max(0, Math.min(TOTAL_FRAMES - 1, index));
+    if (imagesRef.current[i] || loadingRef.current.has(i)) return;
+
+    loadingRef.current.add(i);
+    const img = new Image();
+    img.decoding = "async";
+    img.src = getFrameUrl(i);
+    img.onload = () => {
+      loadingRef.current.delete(i);
+      if (i === currentFrameRef.current) scheduleFrameRef.current(i);
+    };
+    img.onerror = () => loadingRef.current.delete(i);
+    imagesRef.current[i] = img;
+  }, []);
+
+  const preloadAround = useCallback(
+    (center: number) => {
+      const from = Math.max(0, center - PRELOAD_BEHIND);
+      const to = Math.min(TOTAL_FRAMES - 1, center + PRELOAD_AHEAD);
+      for (let i = from; i <= to; i++) ensureFrameLoaded(i);
+    },
+    [ensureFrameLoaded]
+  );
 
   const drawFrame = useCallback((index: number) => {
     const canvas = canvasRef.current;
@@ -35,8 +72,8 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     if (!ctx) return;
 
     const clamped = Math.max(0, Math.min(TOTAL_FRAMES - 1, index));
+
     let img = imagesRef.current[clamped];
-    // If this frame isn't ready yet, show the nearest earlier loaded frame
     if (!img?.complete || img.naturalWidth === 0) {
       for (let i = clamped - 1; i >= 0; i--) {
         const prev = imagesRef.current[i];
@@ -67,16 +104,35 @@ export default function ScrollyCanvas({ containerRef }: Props) {
 
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
-    lastDrawnRef.current = clamped;
   }, []);
 
-  // Paint every animation frame from live scroll progress (no skipped indices)
-  useAnimationFrame(() => {
-    const progress = scrollYProgress.get();
-    const idx = Math.round(progress * (TOTAL_FRAMES - 1));
-    if (idx === lastDrawnRef.current) return;
-    currentFrameRef.current = idx;
-    drawFrame(idx);
+  const scheduleFrame = useCallback(
+    (index: number) => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      rafRef.current = requestAnimationFrame(() => {
+        drawFrame(index);
+      });
+    },
+    [drawFrame]
+  );
+
+  scheduleFrameRef.current = scheduleFrame;
+
+  const goToFrame = useCallback(
+    (index: number) => {
+      currentFrameRef.current = index;
+      preloadAround(index);
+      scheduleFrame(index);
+    },
+    [preloadAround, scheduleFrame]
+  );
+
+  useMotionValueEvent(frameIndex, "change", (latest) => {
+    const idx = Math.round(
+      Math.max(0, Math.min(TOTAL_FRAMES - 1, latest))
+    );
+    if (idx === currentFrameRef.current) return;
+    goToFrame(idx);
   });
 
   useEffect(() => {
@@ -92,26 +148,33 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     setSize();
     window.addEventListener("resize", setSize);
 
-    const images: HTMLImageElement[] = new Array(TOTAL_FRAMES);
+    imagesRef.current = new Array(TOTAL_FRAMES);
+    preloadAround(0);
+    scheduleFrame(0);
 
-    for (let i = 0; i < TOTAL_FRAMES; i++) {
-      const img = new Image();
-      img.decoding = "async";
-      if (i < 20) img.fetchPriority = "high";
-      img.src = getFrameUrl(i);
-      img.onload = () => {
-        if (i === 0 || i === currentFrameRef.current) {
-          lastDrawnRef.current = -1;
-          drawFrame(currentFrameRef.current);
-        }
-      };
-      images[i] = img;
+    // Load remaining frames when the browser is idle (avoids main-thread freeze)
+    let next = PRELOAD_AHEAD + 1;
+    const loadNextIdle = () => {
+      if (next >= TOTAL_FRAMES) return;
+      ensureFrameLoaded(next);
+      next += 1;
+      if (typeof requestIdleCallback !== "undefined") {
+        requestIdleCallback(loadNextIdle, { timeout: 2000 });
+      } else {
+        setTimeout(loadNextIdle, 50);
+      }
+    };
+    if (typeof requestIdleCallback !== "undefined") {
+      requestIdleCallback(loadNextIdle, { timeout: 2000 });
+    } else {
+      setTimeout(loadNextIdle, 200);
     }
 
-    imagesRef.current = images;
-
-    return () => window.removeEventListener("resize", setSize);
-  }, [drawFrame]);
+    return () => {
+      window.removeEventListener("resize", setSize);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [drawFrame, preloadAround, ensureFrameLoaded, scheduleFrame]);
 
   return (
     <div className="sticky top-0 h-screen w-full overflow-hidden">
