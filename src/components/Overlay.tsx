@@ -129,7 +129,7 @@ export default function Overlay({
             <span className="text-accent">AWS · Docker.</span>
           </h2>
           <p className="mt-5 text-[clamp(0.85rem,1.4vw,1.05rem)] text-muted max-w-md leading-relaxed ml-auto font-body">
-            2+ years shipping HRMS, WMS, and AI-native platforms
+            3+ years shipping HRMS, WMS, and AI-native platforms
             with Kafka, Kubernetes, and zero-downtime CI/CD.
           </p>
         </TextBlock>
