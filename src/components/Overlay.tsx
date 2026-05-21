@@ -65,10 +65,7 @@ export default function Overlay({
   const scrollHintOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
 
   return (
-    <div
-      className="absolute inset-0 z-10 pointer-events-none"
-      style={{ height: "500vh" }}
-    >
+    <div className="absolute inset-0 z-10 pointer-events-none">
       <div className="sticky top-0 h-screen w-full overflow-hidden">
 
         {/* Section 1 — Intro hero @ 0% */}

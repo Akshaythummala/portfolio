@@ -20,7 +20,8 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  /* smooth scroll fights scroll-scrubbed canvas; use auto for predictable frame sync */
+  scroll-behavior: auto;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg);

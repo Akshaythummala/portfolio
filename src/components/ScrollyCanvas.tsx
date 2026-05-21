@@ -25,10 +25,11 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     offset: ["start start", "end end"],
   });
 
+  // Spread frames across most of the scroll range; hold last frame near the end
   const frameIndex = useTransform(
     scrollYProgress,
-    [0, 1],
-    [0, TOTAL_FRAMES - 1]
+    [0, 0.92, 1],
+    [0, TOTAL_FRAMES - 1, TOTAL_FRAMES - 1]
   );
 
   const drawFrame = useCallback((index: number) => {
@@ -73,7 +74,7 @@ export default function ScrollyCanvas({ containerRef }: Props) {
   );
 
   useMotionValueEvent(frameIndex, "change", (latest) => {
-    const idx = Math.round(
+    const idx = Math.floor(
       Math.max(0, Math.min(TOTAL_FRAMES - 1, latest))
     );
     if (idx !== currentFrameRef.current) {
