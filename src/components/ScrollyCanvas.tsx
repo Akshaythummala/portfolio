@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useCallback } from "react";
-import { useScroll, useTransform, useMotionValueEvent } from "framer-motion";
+import {
+  useScroll,
+  useAnimationFrame,
+} from "framer-motion";
 
 const TOTAL_FRAMES = 110;
 
@@ -18,19 +21,12 @@ export default function ScrollyCanvas({ containerRef }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(0);
-  const rafRef = useRef<number | null>(null);
+  const lastDrawnRef = useRef(-1);
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
   });
-
-  // Spread frames across most of the scroll range; hold last frame near the end
-  const frameIndex = useTransform(
-    scrollYProgress,
-    [0, 0.92, 1],
-    [0, TOTAL_FRAMES - 1, TOTAL_FRAMES - 1]
-  );
 
   const drawFrame = useCallback((index: number) => {
     const canvas = canvasRef.current;
@@ -38,8 +34,19 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const img = imagesRef.current[index];
-    if (!img || !img.complete || img.naturalWidth === 0) return;
+    const clamped = Math.max(0, Math.min(TOTAL_FRAMES - 1, index));
+    let img = imagesRef.current[clamped];
+    // If this frame isn't ready yet, show the nearest earlier loaded frame
+    if (!img?.complete || img.naturalWidth === 0) {
+      for (let i = clamped - 1; i >= 0; i--) {
+        const prev = imagesRef.current[i];
+        if (prev?.complete && prev.naturalWidth > 0) {
+          img = prev;
+          break;
+        }
+      }
+    }
+    if (!img?.complete || img.naturalWidth === 0) return;
 
     const { width, height } = canvas;
     const imgAspect = img.naturalWidth / img.naturalHeight;
@@ -50,7 +57,6 @@ export default function ScrollyCanvas({ containerRef }: Props) {
       sw = img.naturalWidth,
       sh = img.naturalHeight;
 
-    // object-fit: cover logic
     if (imgAspect > canvasAspect) {
       sw = img.naturalHeight * canvasAspect;
       sx = (img.naturalWidth - sw) / 2;
@@ -61,26 +67,16 @@ export default function ScrollyCanvas({ containerRef }: Props) {
 
     ctx.clearRect(0, 0, width, height);
     ctx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
+    lastDrawnRef.current = clamped;
   }, []);
 
-  const scheduleFrame = useCallback(
-    (index: number) => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        drawFrame(index);
-      });
-    },
-    [drawFrame]
-  );
-
-  useMotionValueEvent(frameIndex, "change", (latest) => {
-    const idx = Math.floor(
-      Math.max(0, Math.min(TOTAL_FRAMES - 1, latest))
-    );
-    if (idx !== currentFrameRef.current) {
-      currentFrameRef.current = idx;
-      scheduleFrame(idx);
-    }
+  // Paint every animation frame from live scroll progress (no skipped indices)
+  useAnimationFrame(() => {
+    const progress = scrollYProgress.get();
+    const idx = Math.round(progress * (TOTAL_FRAMES - 1));
+    if (idx === lastDrawnRef.current) return;
+    currentFrameRef.current = idx;
+    drawFrame(idx);
   });
 
   useEffect(() => {
@@ -96,18 +92,16 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     setSize();
     window.addEventListener("resize", setSize);
 
-    // Eagerly preload all frames
     const images: HTMLImageElement[] = new Array(TOTAL_FRAMES);
-    let loadedCount = 0;
 
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
       img.decoding = "async";
+      if (i < 20) img.fetchPriority = "high";
       img.src = getFrameUrl(i);
       img.onload = () => {
-        loadedCount++;
-        if (i === 0) drawFrame(0);
-        if (loadedCount === TOTAL_FRAMES) {
+        if (i === 0 || i === currentFrameRef.current) {
+          lastDrawnRef.current = -1;
           drawFrame(currentFrameRef.current);
         }
       };
@@ -116,10 +110,7 @@ export default function ScrollyCanvas({ containerRef }: Props) {
 
     imagesRef.current = images;
 
-    return () => {
-      window.removeEventListener("resize", setSize);
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
+    return () => window.removeEventListener("resize", setSize);
   }, [drawFrame]);
 
   return (

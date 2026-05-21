@@ -4,11 +4,14 @@ import { useRef, useEffect } from "react";
 import ScrollyCanvas from "./ScrollyCanvas";
 import Overlay from "./Overlay";
 
-/** Tall enough that wheel ticks advance frames gradually, not skip the sequence */
-const SCROLLY_HEIGHT_VH = 700;
+/** ~9 viewport-heights of scroll ≈ one frame every ~0.8vh — keeps transitions visible */
+const SCROLLY_HEIGHT_VH = 900;
 
-/** Scale wheel delta while the hero is pinned so frames keep pace with scroll */
-const WHEEL_DAMPING = 0.42;
+/** Scale wheel delta while the hero is pinned */
+const WHEEL_DAMPING = 0.28;
+
+/** Cap px moved per wheel tick so fast wheels / trackpads cannot skip frames */
+const MAX_WHEEL_PX = 28;
 
 export default function ScrollySection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -29,7 +32,10 @@ export default function ScrollySection() {
       if (!inPinnedHero) return;
 
       e.preventDefault();
-      window.scrollBy({ top: e.deltaY * WHEEL_DAMPING, behavior: "auto" });
+      const damped =
+        Math.sign(e.deltaY) *
+        Math.min(Math.abs(e.deltaY) * WHEEL_DAMPING, MAX_WHEEL_PX);
+      window.scrollBy({ top: damped, behavior: "auto" });
     };
 
     window.addEventListener("wheel", onWheel, { passive: false });

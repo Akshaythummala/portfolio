@@ -22,7 +22,7 @@ const experience = [
   {
     company: "AI Variant",
     role: "Java Developer Intern",
-    period: "May 2023 – January 2025",
+    period: "April 2023 – January 2025",
     location: "Remote",
     type: "Internship",
     accent: "#38BDF8",
