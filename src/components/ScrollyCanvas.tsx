@@ -37,12 +37,11 @@ export default function ScrollyCanvas({ container }: Props) {
     offset: ["start start", "end end"],
   });
 
-  // Hit final portrait by ~60% of the track, hold through unpin so prod never
-  // cuts off at the mid "What I do" beat.
+  // Brief hold on final portrait, then unpin.
   const frameIndex = useTransform(
     scrollYProgress,
-    [0, 0.58, 0.7, 1],
-    [0, END_FRAME, END_FRAME, END_FRAME]
+    [0, 0.92, 1],
+    [0, END_FRAME, END_FRAME]
   );
 
   const scheduleFrameRef = useRef<(index: number) => void>(() => {});

@@ -8,7 +8,7 @@ import Overlay from "./Overlay";
  * Plain vh height (no min() cap) so production always gets a long sticky track.
  * ~7.5 screens of scrub → final portrait holds → then section unpins and page scrolls up.
  */
-const SCROLLY_HEIGHT_VH = 750;
+const SCROLLY_HEIGHT_VH = 600;
 
 export default function ScrollySection() {
   // Callback ref so useScroll always receives a mounted element (avoids null-target bugs)

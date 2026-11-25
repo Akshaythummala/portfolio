@@ -104,11 +104,11 @@ export default function Overlay({ container }: { container: HTMLDivElement }) {
         </p>
       </TextBlock>
 
-      {/* Lands with final portrait (~58%+) and stays until sticky unpins */}
+      {/* Lands with final portrait; shorter hold before page scrolls up */}
       <TextBlock
         align="right"
         scrollYProgress={scrollYProgress}
-        enterAt={0.5}
+        enterAt={0.82}
         exitAt={1}
         parallaxStrength={28}
       >
