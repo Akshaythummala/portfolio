@@ -8,6 +8,8 @@ import {
 } from "framer-motion";
 
 const TOTAL_FRAMES = 110;
+/** Last frame shown — My Stack portrait; sequence stops here */
+const END_FRAME = 78;
 const PRELOAD_AHEAD = 12;
 const PRELOAD_BEHIND = 4;
 
@@ -32,16 +34,13 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     offset: ["start start", "end end"],
   });
 
-  const frameIndex = useTransform(
-    scrollYProgress,
-    [0, 1],
-    [0, TOTAL_FRAMES - 1]
-  );
+  // Last portrait lands at the end of sticky — then text+images unpin and scroll up together.
+  const frameIndex = useTransform(scrollYProgress, [0, 1], [0, END_FRAME]);
 
   const scheduleFrameRef = useRef<(index: number) => void>(() => {});
 
   const ensureFrameLoaded = useCallback((index: number) => {
-    const i = Math.max(0, Math.min(TOTAL_FRAMES - 1, index));
+    const i = Math.max(0, Math.min(END_FRAME, index));
     if (imagesRef.current[i] || loadingRef.current.has(i)) return;
 
     loadingRef.current.add(i);
@@ -59,7 +58,7 @@ export default function ScrollyCanvas({ containerRef }: Props) {
   const preloadAround = useCallback(
     (center: number) => {
       const from = Math.max(0, center - PRELOAD_BEHIND);
-      const to = Math.min(TOTAL_FRAMES - 1, center + PRELOAD_AHEAD);
+      const to = Math.min(END_FRAME, center + PRELOAD_AHEAD);
       for (let i = from; i <= to; i++) ensureFrameLoaded(i);
     },
     [ensureFrameLoaded]
@@ -71,7 +70,7 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const clamped = Math.max(0, Math.min(TOTAL_FRAMES - 1, index));
+    const clamped = Math.max(0, Math.min(END_FRAME, index));
 
     let img = imagesRef.current[clamped];
     if (!img?.complete || img.naturalWidth === 0) {
@@ -128,9 +127,7 @@ export default function ScrollyCanvas({ containerRef }: Props) {
   );
 
   useMotionValueEvent(frameIndex, "change", (latest) => {
-    const idx = Math.round(
-      Math.max(0, Math.min(TOTAL_FRAMES - 1, latest))
-    );
+    const idx = Math.round(Math.max(0, Math.min(END_FRAME, latest)));
     if (idx === currentFrameRef.current) return;
     goToFrame(idx);
   });
@@ -155,7 +152,7 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     // Load remaining frames when the browser is idle (avoids main-thread freeze)
     let next = PRELOAD_AHEAD + 1;
     const loadNextIdle = () => {
-      if (next >= TOTAL_FRAMES) return;
+      if (next > END_FRAME) return;
       ensureFrameLoaded(next);
       next += 1;
       if (typeof requestIdleCallback !== "undefined") {
@@ -177,11 +174,9 @@ export default function ScrollyCanvas({ containerRef }: Props) {
   }, [drawFrame, preloadAround, ensureFrameLoaded, scheduleFrame]);
 
   return (
-    <div className="sticky top-0 h-screen w-full overflow-hidden">
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 block w-full h-full"
-      />
-    </div>
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 block h-full w-full"
+    />
   );
 }

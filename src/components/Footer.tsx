@@ -57,8 +57,8 @@ export default function Footer() {
             <span className="text-accent">great together.</span>
           </h3>
           <p className="text-sm text-muted mb-8 max-w-md mx-auto leading-relaxed font-body">
-            Java Full Stack Developer based in Hyderabad, available for full-time roles
-            and freelance engagements.
+            Full Stack Developer in Hyderabad — Java, Python, React, and MERN —
+            building SaaS suites, WMS, EdTech, and client platforms.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -88,7 +88,7 @@ export default function Footer() {
             </div>
             <div>
               <p className="text-sm font-semibold text-text font-heading leading-tight">Akshay Thummala</p>
-              <p className="text-[11px] text-muted font-body">Java Full Stack Developer · Hyderabad, India</p>
+              <p className="text-[11px] text-muted font-body">Full Stack Developer · Hyderabad, India</p>
             </div>
           </div>
 
@@ -108,7 +108,7 @@ export default function Footer() {
           </div>
 
           <p className="text-[11px] text-white/20 font-body">
-            © 2024 Akshay Thummala
+            © 2025 Akshay Thummala
           </p>
         </div>
       </div>

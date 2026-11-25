@@ -24,10 +24,13 @@ function TextBlock({
   exitAt,
   parallaxStrength = 60,
 }: TextBlockProps) {
+  // Final beat (exitAt >= 1): stay fully visible until sticky unpins — no fade-out.
   const opacity = useTransform(
     scrollYProgress,
-    [enterAt - 0.07, enterAt, exitAt, exitAt + 0.06],
-    [0, 1, 1, 0]
+    exitAt >= 1
+      ? [enterAt - 0.07, enterAt, 1]
+      : [enterAt - 0.07, enterAt, exitAt, Math.min(1, exitAt + 0.06)],
+    exitAt >= 1 ? [0, 1, 1] : [0, 1, 1, 0]
   );
   const y = useTransform(
     scrollYProgress,
@@ -65,87 +68,83 @@ export default function Overlay({
   const scrollHintOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
 
   return (
-    <div className="absolute inset-0 z-10 pointer-events-none">
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+    <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
+      {/* Section 1 — Intro hero @ 0% */}
+      <TextBlock
+        align="center"
+        scrollYProgress={scrollYProgress}
+        enterAt={0.0}
+        exitAt={0.17}
+        parallaxStrength={40}
+      >
+        <p className="text-[10px] tracking-[0.45em] uppercase text-accent mb-3 font-medium font-body">
+          Full Stack Developer
+        </p>
+        <h1 className="text-[clamp(3rem,8vw,7rem)] font-black leading-[0.92] tracking-tight text-text font-heading">
+          Akshay
+          <br />
+          Thummala
+        </h1>
+        <div className="mt-5 h-px w-12 bg-accent mx-auto" />
+        <p className="mt-4 text-[clamp(0.8rem,1.3vw,1rem)] text-muted max-w-sm mx-auto leading-relaxed font-body">
+          Hyderabad, India
+        </p>
+      </TextBlock>
 
-        {/* Section 1 — Intro hero @ 0% */}
-        <TextBlock
-          align="center"
-          scrollYProgress={scrollYProgress}
-          enterAt={0.0}
-          exitAt={0.17}
-          parallaxStrength={40}
-        >
-          <p className="text-[10px] tracking-[0.45em] uppercase text-accent mb-3 font-medium font-body">
-            Java Full Stack Developer
-          </p>
-          <h1 className="text-[clamp(3rem,8vw,7rem)] font-black leading-[0.92] tracking-tight text-text font-heading">
-            Akshay
-            <br />
-            Thummala
-          </h1>
-          <div className="mt-5 h-px w-12 bg-accent mx-auto" />
-          <p className="mt-4 text-[clamp(0.8rem,1.3vw,1rem)] text-muted max-w-sm mx-auto leading-relaxed font-body">
-            Hyderabad, India
-          </p>
-        </TextBlock>
+      {/* Section 2 — What I do */}
+      <TextBlock
+        align="left"
+        scrollYProgress={scrollYProgress}
+        enterAt={0.28}
+        exitAt={0.52}
+        parallaxStrength={50}
+      >
+        <p className="text-[10px] tracking-[0.4em] uppercase text-accent mb-3 font-medium font-body">
+          What I do
+        </p>
+        <h2 className="text-[clamp(2rem,5.5vw,4.8rem)] font-black leading-[1.0] tracking-tight text-text font-heading">
+          I ship SaaS
+          <br />
+          <span className="text-accent">product suites.</span>
+        </h2>
+        <p className="mt-5 text-[clamp(0.85rem,1.4vw,1.05rem)] text-muted max-w-md leading-relaxed font-body">
+          Multi-tenant HRMS, Payroll, WMS, CRM, and EdTech —
+          from SSO and DocuSign to NetSuite and Shopify sync.
+        </p>
+      </TextBlock>
 
-        {/* Section 2 — What I do @ 28% */}
-        <TextBlock
-          align="left"
-          scrollYProgress={scrollYProgress}
-          enterAt={0.26}
-          exitAt={0.46}
-          parallaxStrength={50}
-        >
-          <p className="text-[10px] tracking-[0.4em] uppercase text-accent mb-3 font-medium font-body">
-            What I do
-          </p>
-          <h2 className="text-[clamp(2rem,5.5vw,4.8rem)] font-black leading-[1.0] tracking-tight text-text font-heading">
-            I build scalable
-            <br />
-            <span className="text-accent">enterprise apps.</span>
-          </h2>
-          <p className="mt-5 text-[clamp(0.85rem,1.4vw,1.05rem)] text-muted max-w-md leading-relaxed font-body">
-            Spring Boot microservices, React.js frontends, and
-            cloud-native pipelines — delivered in Agile sprints.
-          </p>
-        </TextBlock>
+      {/* Final beat — freezes with last image; sticky then unpins and scrolls up */}
+      <TextBlock
+        align="right"
+        scrollYProgress={scrollYProgress}
+        enterAt={0.62}
+        exitAt={1}
+        parallaxStrength={40}
+      >
+        <p className="text-[10px] tracking-[0.4em] uppercase text-accent mb-3 font-medium font-body">
+          My stack
+        </p>
+        <h2 className="text-[clamp(2rem,5.5vw,4.8rem)] font-black leading-[1.0] tracking-tight text-text font-heading">
+          Java · Python ·
+          <br />
+          <span className="text-accent">React · MERN.</span>
+        </h2>
+        <p className="mt-5 text-[clamp(0.85rem,1.4vw,1.05rem)] text-muted max-w-md leading-relaxed ml-auto font-body">
+          Spring Boot, FastAPI, Node.js, Three.js, PostgreSQL, PHP & WordPress —
+          plus cloud, Docker, and AI-powered reporting.
+        </p>
+      </TextBlock>
 
-        {/* Section 3 — Stack @ 58% */}
-        <TextBlock
-          align="right"
-          scrollYProgress={scrollYProgress}
-          enterAt={0.56}
-          exitAt={0.78}
-          parallaxStrength={50}
-        >
-          <p className="text-[10px] tracking-[0.4em] uppercase text-accent mb-3 font-medium font-body">
-            My stack
-          </p>
-          <h2 className="text-[clamp(2rem,5.5vw,4.8rem)] font-black leading-[1.0] tracking-tight text-text font-heading">
-            Java · React ·
-            <br />
-            <span className="text-accent">AWS · Docker.</span>
-          </h2>
-          <p className="mt-5 text-[clamp(0.85rem,1.4vw,1.05rem)] text-muted max-w-md leading-relaxed ml-auto font-body">
-            3+ years shipping HRMS, WMS, and AI-native platforms
-            with Kafka, Kubernetes, and zero-downtime CI/CD.
-          </p>
-        </TextBlock>
-
-        {/* Scroll hint */}
-        <motion.div
-          style={{ opacity: scrollHintOpacity }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"
-        >
-          <span className="text-[9px] tracking-[0.4em] uppercase text-white/30 font-body">
-            Scroll
-          </span>
-          <div className="w-px h-10 bg-gradient-to-b from-white/30 to-transparent" />
-        </motion.div>
-
-      </div>
+      {/* Scroll hint */}
+      <motion.div
+        style={{ opacity: scrollHintOpacity }}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"
+      >
+        <span className="text-[9px] tracking-[0.4em] uppercase text-white/30 font-body">
+          Scroll
+        </span>
+        <div className="w-px h-10 bg-gradient-to-b from-white/30 to-transparent" />
+      </motion.div>
     </div>
   );
 }

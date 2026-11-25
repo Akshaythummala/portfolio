@@ -11,26 +11,63 @@ const experience = [
     location: "Hyderabad, India",
     type: "Full-time",
     accent: "#22C55E",
-    stack: ["Java", "Spring Boot", "React.js", "MySQL", "Docker", "AWS"],
+    stack: [
+      "Java",
+      "Spring Boot",
+      "Python",
+      "FastAPI",
+      "React.js",
+      "Next.js",
+      "Three.js",
+      "MERN",
+      "Node.js",
+      "PostgreSQL",
+      "MongoDB",
+      "MariaDB",
+      "PHP",
+      "WordPress",
+      "Shopify",
+      "NetSuite",
+      "DocuSign",
+      "OpenAI",
+      "Docker",
+      "AWS",
+    ],
     bullets: [
-      "Developed and maintained enterprise-grade HRMS and WMS applications in Agile sprint cycles.",
-      "Designed and consumed RESTful APIs with JPA/Hibernate for employee, payroll, attendance, and inventory management modules with optimized SQL queries and RBAC.",
-      "Reduced feature delivery turnaround by ~40% through structured code reviews, API payload debugging, and JUnit-tested module handoffs.",
-      "Cut bug resolution time by ~50% via systematic root-cause analysis across REST endpoints.",
+      "Built Pragva Business Suite — HRMS, Payroll, CRM, Vocopal, WMS, Sales, NetSuite-Git, and Proposal Tool — with suite-wide SSO across purchased products.",
+      "Led Pragva HRMS — multi-tenant, employee-centric SaaS with 4 roles, under-10-minute setup, 45-day free trial; React.js, Spring Boot, PostgreSQL, OpenAI; games, wellness, and AI performance reports.",
+      "Built Pragva Payroll (React.js, Python FastAPI, PostgreSQL) — standalone or HRMS combo; syncs employee data for faster import and generates payslips, HR letters, and financial reports.",
+      "Built JYSWMS for a client — NetSuite-integrated WMS (Python FastAPI, React.js, PostgreSQL) with bidirectional sync, picker mobile app, full web WMS, and Shopify for operations.",
+      "Built Astro Greet (PHP, MariaDB) — natal and KP charts, WhatsApp API greetings, and referral-based live consultations.",
+      "Developed the Amrutha Varahi business website for a client and partnered company using PHP, WordPress, and MariaDB.",
     ],
   },
   {
-    company: "AI Variant",
-    role: "Java Developer Intern",
-    period: "April 2023 – January 2025",
-    location: "Remote",
-    type: "Internship",
+    company: "RSK Tech Systems",
+    role: "Software Engineer",
+    period: "August 2023 – March 2025",
+    location: "Bangalore, India",
+    type: "Full-time",
     accent: "#38BDF8",
     stack: ["Java", "Spring Boot", "React.js", "Docker", "Kubernetes", "Jenkins", "Kafka"],
     bullets: [
       "Built and deployed a cloud-native distributed E-Commerce platform with 6 independent Spring Boot microservices (Order, Inventory, Payment, User, Notification, Gateway).",
       "Implemented Eureka service discovery, Feign Client inter-service communication, Kafka for order event streaming, and RabbitMQ for notifications.",
       "Engineered a full Jenkins CI/CD pipeline: build → test → Docker push to AWS ECR → Kubernetes rolling deployment on ECS with zero-downtime and auto-scaling.",
+    ],
+  },
+  {
+    company: "Skillsprint Technologies",
+    role: "Trainer & Mentor",
+    period: "December 2021 – June 2023",
+    location: "Remote",
+    type: "Part-time",
+    accent: "#FBBF24",
+    stack: ["Java", "Spring Boot", "Python", "FastAPI", "MySQL", "React.js", "LMS", "CRM", "CMS"],
+    bullets: [
+      "Trained and mentored 20+ students in Java and Python full-stack development — live sessions, recorded classes, assignments, doubt-clearing, and guided projects to ship full-stack apps.",
+      "Built the Skillsprint company platform (similar model to Chess Club) for trainings, internships, and product building — with LMS, CRM, CMS, and a public site for software services and products.",
+      "Designed 5 roles — admin, public visitor, student, trainer, and business development — so training, sales, and content workflows run from one portal.",
     ],
   },
 ];
@@ -57,7 +94,7 @@ export default function Experience() {
             <h2 className="text-[clamp(2.5rem,6vw,4.5rem)] font-black tracking-tight text-text leading-[0.95] font-heading">
               Experience
             </h2>
-            <span className="text-sm text-muted font-body">2+ years</span>
+            <span className="text-sm text-muted font-body">3+ years</span>
           </div>
           <div className="mt-6 h-px bg-white/[0.06]" />
         </motion.div>

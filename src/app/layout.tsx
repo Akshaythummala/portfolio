@@ -17,16 +17,20 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Akshay Thummala — Java Full Stack Developer",
+  title: "Akshay Thummala — Full Stack Developer",
   description:
-    "Java Full Stack Developer with 2+ years of experience building scalable enterprise web applications using Java, Spring Boot, React.js, and cloud-native architecture.",
+    "Full Stack Developer shipping SaaS product suites, HRMS, Payroll, WMS, and EdTech with Java Spring Boot, Python FastAPI, React, MERN, PostgreSQL, and cloud integrations.",
   keywords: [
-    "Java Developer",
     "Full Stack Developer",
+    "Java",
+    "Python",
     "Spring Boot",
+    "FastAPI",
     "React.js",
-    "Microservices",
-    "AWS",
+    "Three.js",
+    "MERN",
+    "PostgreSQL",
+    "SaaS",
     "Hyderabad",
   ],
 };

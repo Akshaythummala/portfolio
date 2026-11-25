@@ -6,47 +6,113 @@ import { motion, useInView } from "framer-motion";
 const projects = [
   {
     id: "01",
-    title: "Multi-Tenant HRMS",
-    category: "Full-Stack SaaS · HR Platform",
+    title: "Pragva Business Suite",
+    category: "MERN · SaaS Product Suite",
     description:
-      "Enterprise HR management platform with secure tenant isolation, payroll automation, attendance & leave tracking, and real-time responsive dashboards for Admin, HR Manager, and Employee roles.",
-    tech: ["Java", "Spring Boot", "React.js", "MySQL", "JWT/RBAC", "Docker", "AWS EC2", "Jenkins"],
-    highlight: "3-tier RBAC · Discriminator-based tenant isolation · Jenkins CI/CD",
+      "Suite of products under one Pragva account — HRMS, Payroll, CRM, Vocopal, WMS, Sales, NetSuite-Git, and Proposal Tool. Suite-wide SSO: purchase any product and sign in with the same Pragva credentials across every app you own.",
+    tech: ["MongoDB", "Express.js", "React.js", "Node.js", "SSO", "JWT", "MinIO"],
+    highlight: "Suite products · Shared SSO · One Pragva account across apps",
     accent: "#22C55E",
-    link: "https://github.com/Akshaythummala",
+    link: "https://pragva.in/",
   },
   {
     id: "02",
-    title: "AI Document Intelligence",
-    category: "AI · RAG · Semantic Search",
+    title: "Pragva HRMS",
+    category: "Pragva Suite · Employee-Centric SaaS",
     description:
-      "Java-native RAG pipeline — no Python dependency. Spring AI handles chunking, embedding via OpenAI Embeddings API, and vector storage in pgvector. Semantic search retrieves top-k context before GPT response generation.",
-    tech: ["Java", "Spring AI", "OpenAI API", "pgvector", "PostgreSQL", "Apache Kafka"],
-    highlight: "Pure Java RAG · pgvector similarity search · Kafka event streaming",
+      "Multi-tenant HR platform anyone can stand up in under 10 minutes with a 45-day free trial and 4 roles. Standard HR: employees, leaves, WFH, timesheets, attendance, notices, holidays, reporting, org tree, expenses, assets, ticketing, and My Team. USP: games, leaderboards, wellness, and OpenAI-generated performance reports — built for high security.",
+    tech: ["React.js", "Java", "Spring Boot", "PostgreSQL", "OpenAI", "JWT/RBAC"],
+    highlight: "4 roles · <10 min setup · Games & wellness · AI performance reports",
     accent: "#38BDF8",
-    link: "https://github.com/Akshaythummala",
+    link: "https://hrms.pragva.in/",
   },
   {
     id: "03",
-    title: "Cloud-Native E-Commerce",
-    category: "Microservices · DevOps",
+    title: "Pragva Payroll",
+    category: "Pragva Suite · Finance · FastAPI",
     description:
-      "Distributed e-commerce platform with 6 independent Spring Boot microservices — Order, Inventory, Payment, User, Notification, Gateway — with Eureka discovery, Feign Client comms, and zero-downtime Kubernetes deployments.",
-    tech: ["Spring Boot", "Kafka", "RabbitMQ", "Kubernetes", "Docker", "AWS ECR/ECS", "Jenkins"],
-    highlight: "6 microservices · Eureka discovery · Auto-scaling ECS rolling deploy",
+      "Payroll product under Pragva — available as an HRMS combo or standalone. Syncs with HRMS to pull employee data for faster importing, then generates payslips, HR letters, and other financial reports. Built with React.js, Python FastAPI, and PostgreSQL.",
+    tech: ["React.js", "Python", "FastAPI", "PostgreSQL", "HRMS Sync"],
+    highlight: "Standalone or HRMS combo · Emp sync import · Payslips & HR letters",
     accent: "#A78BFA",
-    link: "https://github.com/Akshaythummala",
+    link: "https://payroll-management-frontend-production.up.railway.app/",
   },
   {
     id: "04",
-    title: "WMS — Warehouse Mgmt",
-    category: "Enterprise · Backend",
+    title: "Astro Greet",
+    category: "Astrology · PHP · WhatsApp",
     description:
-      "Warehouse management system with optimized SQL queries, JPA/Hibernate ORM, secure REST API endpoints, and role-based inventory module access. Delivered as part of Agile sprint cycles at Pragadas Technologies.",
-    tech: ["Java", "Spring Boot", "Spring Security", "JPA/Hibernate", "MySQL", "React.js", "Docker"],
-    highlight: "Optimized SQL queries · Spring Security RBAC · REST API",
+      "Astrology product for natal and KP chart generation with interactive Three.js chart visuals. Integrated WhatsApp API to send greetings, plus referral-based live consultations. Built with PHP, MariaDB, and Three.js.",
+    tech: ["PHP", "MariaDB", "WhatsApp API", "Three.js"],
+    highlight: "Natal & KP charts · Three.js visuals · WhatsApp greetings",
     accent: "#FB923C",
+    link: "https://astrogreet.in/",
+  },
+  {
+    id: "05",
+    title: "Library Management System",
+    category: "Client · MERN · EdTech Ops",
+    description:
+      "Client library platform on the MERN stack for end-to-end circulation. Manage books and categories, member registration, issue/return workflows, reservations, overdue fines, and search with filters. Role-based access for librarians and admins, plus dashboards for inventory, active loans, and member activity.",
+    tech: ["MongoDB", "Express.js", "React.js", "Node.js", "JWT/RBAC"],
+    highlight: "Catalog · Issue/return · Fines · Reservations · Admin dashboards",
+    accent: "#34D399",
     link: "https://github.com/Akshaythummala",
+  },
+  {
+    id: "06",
+    title: "Chess Club",
+    category: "EdTech · CRM · CMS · Three.js",
+    description:
+      "Company webpage and platform with CRM for lead management and roles for admin, public visitor, coach, and student. Free demo classes, parental controls for minor students in the US, admin-driven CMS, and Three.js-powered interactive board visuals. Edutech for coaches: live classes, recorded sessions, and bulk emails with class meeting links.",
+    tech: ["CRM", "CMS", "RBAC", "EdTech", "Three.js"],
+    highlight: "4 roles · Three.js board · Parental controls · CMS",
+    accent: "#F472B6",
+    link: "https://www.minervaacme.com/",
+  },
+  {
+    id: "07",
+    title: "Skillsprint Platform",
+    category: "EdTech · LMS · CRM · CMS",
+    description:
+      "Company website and platform for Skillsprint Technologies — software services, products, trainings, internships, and product building. Five roles: admin, public visitor, student, trainer, and business development. Includes LMS for learning, CRM for leads, and CMS so admins control landing and in-app content.",
+    tech: ["LMS", "CRM", "CMS", "RBAC"],
+    highlight: "5 roles · LMS · Trainings & internships · Services site",
+    accent: "#FBBF24",
+    link: "https://www.skillsprinttech.in/",
+  },
+  {
+    id: "08",
+    title: "Amrutha Varahi",
+    category: "Client · WordPress · Business Site",
+    description:
+      "Business website for Amrutha Varahi — a client and partnered company. Built with PHP, WordPress, and MariaDB to present their brand and offerings online.",
+    tech: ["PHP", "WordPress", "MariaDB"],
+    highlight: "Client & partner site · WordPress CMS · Business presence",
+    accent: "#FBBF24",
+    link: "https://amruthavarahi.com/",
+  },
+  {
+    id: "09",
+    title: "Pragva Proposal Tool",
+    category: "Pragva Suite · Sales · DocuSign",
+    description:
+      "Proposal workflow under Pragva with admin and customer roles. Admin manages products and company settings, builds customized proposals for inbound clients, and sends them out. Customers request revisions or approve, then sign with DocuSign and complete purchase or full payment to close legally.",
+    tech: ["DocuSign", "RBAC", "Proposals", "Payments"],
+    highlight: "Admin ↔ customer flow · Revisions · DocuSign · Purchase close",
+    accent: "#2DD4BF",
+    link: "https://github.com/Akshaythummala",
+  },
+  {
+    id: "10",
+    title: "JYSWMS",
+    category: "Client · WMS · NetSuite · Shopify",
+    description:
+      "Client warehouse management system integrated with NetSuite — fetches and pushes data bidirectionally. Web app covers full WMS operations; mobile app for pickers on the floor. Shopify tied in for managing operations end to end. Stack: Python FastAPI, React.js, PostgreSQL.",
+    tech: ["Python", "FastAPI", "React.js", "PostgreSQL", "NetSuite", "Shopify"],
+    highlight: "NetSuite sync · Picker mobile app · Shopify ops · Full WMS",
+    accent: "#818CF8",
+    link: "https://jyswms.com/",
   },
 ];
 
@@ -65,6 +131,15 @@ const cardVariants = {
 };
 
 function ProjectCard({ project }: { project: (typeof projects)[0] }) {
+  const host = (() => {
+    try {
+      return new URL(project.link).hostname.replace(/^www\./, "");
+    } catch {
+      return project.link;
+    }
+  })();
+  const isGithub = host.includes("github.com");
+
   return (
     <motion.a
       href={project.link}
@@ -132,12 +207,12 @@ function ProjectCard({ project }: { project: (typeof projects)[0] }) {
 
       {/* Footer */}
       <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
-        <span className="text-[10px] text-white/20 font-mono">github.com/Akshaythummala</span>
+        <span className="text-[10px] text-white/20 font-mono truncate max-w-[60%]">{host}</span>
         <div
           className="flex items-center gap-1.5 text-[10px] font-semibold tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-body"
           style={{ color: project.accent }}
         >
-          View on GitHub
+          {isGithub ? "View on GitHub" : "Visit live site"}
           <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
             <path d="M2 6h8M6 2l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
@@ -163,7 +238,7 @@ export default function Projects() {
           className="mb-14"
         >
           <p className="text-[10px] tracking-[0.45em] uppercase text-accent mb-3 font-medium font-body">
-            Selected work
+            SaaS · EdTech · Client platforms
           </p>
           <div className="flex items-end justify-between flex-wrap gap-4">
             <h2 className="text-[clamp(2.5rem,6vw,4.5rem)] font-black tracking-tight text-text leading-[0.95] font-heading">
