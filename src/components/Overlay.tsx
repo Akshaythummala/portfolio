@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 interface TextBlockProps {
@@ -19,18 +20,17 @@ function TextBlock({
   exitAt,
   parallaxStrength = 60,
 }: TextBlockProps) {
-  // Final beat (exitAt >= 1): stay fully visible until sticky unpins — no fade-out.
   const opacity = useTransform(
     scrollYProgress,
     exitAt >= 1
-      ? [enterAt - 0.07, enterAt, 1]
-      : [enterAt - 0.07, enterAt, exitAt, Math.min(1, exitAt + 0.06)],
+      ? [enterAt - 0.06, enterAt, 1]
+      : [enterAt - 0.06, enterAt, exitAt, Math.min(1, exitAt + 0.05)],
     exitAt >= 1 ? [0, 1, 1] : [0, 1, 1, 0]
   );
-  // Direct transform — spring lag fights scroll-scrub and feels worse in production
+
   const y = useTransform(
     scrollYProgress,
-    [enterAt - 0.1, Math.min(1, exitAt + 0.1)],
+    [enterAt - 0.08, Math.min(1, exitAt + 0.08)],
     [parallaxStrength, -parallaxStrength]
   );
 
@@ -50,27 +50,24 @@ function TextBlock({
   );
 }
 
-export default function Overlay({
-  containerRef,
-}: {
-  containerRef: React.RefObject<HTMLDivElement | null>;
-}) {
+export default function Overlay({ container }: { container: HTMLDivElement }) {
+  const target = useMemo(() => ({ current: container }), [container]);
+
   const { scrollYProgress } = useScroll({
-    target: containerRef,
+    target,
     offset: ["start start", "end end"],
   });
 
-  const scrollHintOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0]);
+  const scrollHintOpacity = useTransform(scrollYProgress, [0, 0.06], [1, 0]);
 
   return (
     <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-      {/* Section 1 — Intro hero @ 0% */}
       <TextBlock
         align="center"
         scrollYProgress={scrollYProgress}
         enterAt={0.0}
-        exitAt={0.17}
-        parallaxStrength={40}
+        exitAt={0.16}
+        parallaxStrength={36}
       >
         <p className="text-[10px] tracking-[0.45em] uppercase text-accent mb-3 font-medium font-body">
           Full Stack Developer
@@ -86,13 +83,12 @@ export default function Overlay({
         </p>
       </TextBlock>
 
-      {/* Section 2 — What I do */}
       <TextBlock
         align="left"
         scrollYProgress={scrollYProgress}
-        enterAt={0.28}
-        exitAt={0.52}
-        parallaxStrength={50}
+        enterAt={0.22}
+        exitAt={0.42}
+        parallaxStrength={44}
       >
         <p className="text-[10px] tracking-[0.4em] uppercase text-accent mb-3 font-medium font-body">
           What I do
@@ -108,13 +104,13 @@ export default function Overlay({
         </p>
       </TextBlock>
 
-      {/* Final beat — lands with last portrait, stays until sticky unpins */}
+      {/* Lands with final portrait (~58%+) and stays until sticky unpins */}
       <TextBlock
         align="right"
         scrollYProgress={scrollYProgress}
-        enterAt={0.72}
+        enterAt={0.5}
         exitAt={1}
-        parallaxStrength={30}
+        parallaxStrength={28}
       >
         <p className="text-[10px] tracking-[0.4em] uppercase text-accent mb-3 font-medium font-body">
           My stack
@@ -130,7 +126,6 @@ export default function Overlay({
         </p>
       </TextBlock>
 
-      {/* Scroll hint */}
       <motion.div
         style={{ opacity: scrollHintOpacity }}
         className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none"

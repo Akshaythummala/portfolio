@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback } from "react";
+import { useEffect, useRef, useCallback, useMemo } from "react";
 import {
   useScroll,
   useTransform,
@@ -8,11 +8,11 @@ import {
 } from "framer-motion";
 
 const TOTAL_FRAMES = 110;
-/** Last frame shown — My Stack portrait */
+/** Last frame — My Stack portrait */
 const END_FRAME = 78;
-const PRELOAD_AHEAD = 20;
+const PRELOAD_AHEAD = 24;
 const PRELOAD_BEHIND = 4;
-const PRELOAD_BATCH = 8;
+const PRELOAD_BATCH = 10;
 
 function getFrameUrl(index: number): string {
   const padded = String(index).padStart(3, "0");
@@ -20,34 +20,39 @@ function getFrameUrl(index: number): string {
 }
 
 interface Props {
-  containerRef: React.RefObject<HTMLDivElement | null>;
+  container: HTMLDivElement;
 }
 
-export default function ScrollyCanvas({ containerRef }: Props) {
+export default function ScrollyCanvas({ container }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imagesRef = useRef<(HTMLImageElement | undefined)[]>([]);
   const loadingRef = useRef<Set<number>>(new Set());
   const currentFrameRef = useRef(0);
   const rafRef = useRef<number | null>(null);
 
+  const target = useMemo(() => ({ current: container }), [container]);
+
   const { scrollYProgress } = useScroll({
-    target: containerRef,
+    target,
     offset: ["start start", "end end"],
   });
 
-  // Reach the portrait early enough that production scroll/inertia still shows it,
-  // then hold until sticky unpins and the page scrolls up.
+  // Hit final portrait by ~60% of the track, hold through unpin so prod never
+  // cuts off at the mid "What I do" beat.
   const frameIndex = useTransform(
     scrollYProgress,
-    [0, 0.72, 0.88, 1],
-    [0, END_FRAME * 0.85, END_FRAME, END_FRAME]
+    [0, 0.58, 0.7, 1],
+    [0, END_FRAME, END_FRAME, END_FRAME]
   );
 
   const scheduleFrameRef = useRef<(index: number) => void>(() => {});
 
   const ensureFrameLoaded = useCallback((index: number) => {
     const i = Math.max(0, Math.min(END_FRAME, index));
-    if (imagesRef.current[i] || loadingRef.current.has(i)) return;
+    if (imagesRef.current[i]?.complete && (imagesRef.current[i]?.naturalWidth ?? 0) > 0) {
+      return;
+    }
+    if (loadingRef.current.has(i)) return;
 
     loadingRef.current.add(i);
     const img = new Image();
@@ -117,9 +122,7 @@ export default function ScrollyCanvas({ containerRef }: Props) {
   const scheduleFrame = useCallback(
     (index: number) => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      rafRef.current = requestAnimationFrame(() => {
-        drawFrame(index);
-      });
+      rafRef.current = requestAnimationFrame(() => drawFrame(index));
     },
     [drawFrame]
   );
@@ -157,13 +160,16 @@ export default function ScrollyCanvas({ containerRef }: Props) {
 
     setSize();
     window.addEventListener("resize", setSize);
-    window.addEventListener("orientationchange", setSize);
 
     imagesRef.current = new Array(TOTAL_FRAMES);
+
+    // Priority: load the final portrait first (what prod was missing), then the start
+    for (let i = Math.max(0, END_FRAME - 12); i <= END_FRAME; i++) {
+      ensureFrameLoaded(i);
+    }
     preloadAround(0);
     scheduleFrame(0);
 
-    // Eager batched preload — idle loading is too slow in production / on mobile
     let next = 0;
     let cancelled = false;
     const loadBatch = () => {
@@ -173,28 +179,29 @@ export default function ScrollyCanvas({ containerRef }: Props) {
       next = end + 1;
       if (next <= END_FRAME) {
         if (typeof requestIdleCallback !== "undefined") {
-          requestIdleCallback(loadBatch, { timeout: 400 });
+          requestIdleCallback(loadBatch, { timeout: 300 });
         } else {
-          setTimeout(loadBatch, 16);
+          setTimeout(loadBatch, 12);
         }
       }
     };
     loadBatch();
 
-    // Sync frame if page restored mid-scroll
     const sync = () => {
-      const latest = frameIndex.get();
-      const idx = Math.round(Math.max(0, Math.min(END_FRAME, latest)));
+      const idx = Math.round(
+        Math.max(0, Math.min(END_FRAME, frameIndex.get()))
+      );
       goToFrame(idx);
     };
     sync();
-    const t = window.setTimeout(sync, 100);
+    const t1 = window.setTimeout(sync, 50);
+    const t2 = window.setTimeout(sync, 300);
 
     return () => {
       cancelled = true;
-      window.clearTimeout(t);
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
       window.removeEventListener("resize", setSize);
-      window.removeEventListener("orientationchange", setSize);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, [

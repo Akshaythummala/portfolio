@@ -1,28 +1,32 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import ScrollyCanvas from "./ScrollyCanvas";
 import Overlay from "./Overlay";
 
 /**
- * Tall enough for a smooth scrub to the final portrait, then sticky unpins
- * and the rest of the page scrolls up normally.
- * Uses dvh where supported so mobile browser chrome doesn't break the pin.
+ * Plain vh height (no min() cap) so production always gets a long sticky track.
+ * ~7.5 screens of scrub → final portrait holds → then section unpins and page scrolls up.
  */
-const SCROLLY_HEIGHT = "min(580vh, 5200px)";
+const SCROLLY_HEIGHT_VH = 750;
 
 export default function ScrollySection() {
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Callback ref so useScroll always receives a mounted element (avoids null-target bugs)
+  const [container, setContainer] = useState<HTMLDivElement | null>(null);
 
   return (
     <div
-      ref={containerRef}
+      ref={setContainer}
       className="relative w-full"
-      style={{ height: SCROLLY_HEIGHT }}
+      style={{ height: `${SCROLLY_HEIGHT_VH}vh` }}
     >
-      <div className="sticky top-0 z-0 h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-[#0a0f1e]">
-        <ScrollyCanvas containerRef={containerRef} />
-        <Overlay containerRef={containerRef} />
+      <div className="sticky top-0 z-0 h-screen w-full overflow-hidden bg-[#0a0f1e]">
+        {container && (
+          <>
+            <ScrollyCanvas container={container} />
+            <Overlay container={container} />
+          </>
+        )}
       </div>
     </div>
   );
