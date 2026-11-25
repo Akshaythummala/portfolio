@@ -8,10 +8,11 @@ import {
 } from "framer-motion";
 
 const TOTAL_FRAMES = 110;
-/** Last frame shown — My Stack portrait; sequence stops here */
+/** Last frame shown — My Stack portrait */
 const END_FRAME = 78;
-const PRELOAD_AHEAD = 12;
+const PRELOAD_AHEAD = 20;
 const PRELOAD_BEHIND = 4;
+const PRELOAD_BATCH = 8;
 
 function getFrameUrl(index: number): string {
   const padded = String(index).padStart(3, "0");
@@ -19,7 +20,7 @@ function getFrameUrl(index: number): string {
 }
 
 interface Props {
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export default function ScrollyCanvas({ containerRef }: Props) {
@@ -34,8 +35,13 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     offset: ["start start", "end end"],
   });
 
-  // Last portrait lands at the end of sticky — then text+images unpin and scroll up together.
-  const frameIndex = useTransform(scrollYProgress, [0, 1], [0, END_FRAME]);
+  // Reach the portrait early enough that production scroll/inertia still shows it,
+  // then hold until sticky unpins and the page scrolls up.
+  const frameIndex = useTransform(
+    scrollYProgress,
+    [0, 0.72, 0.88, 1],
+    [0, END_FRAME * 0.85, END_FRAME, END_FRAME]
+  );
 
   const scheduleFrameRef = useRef<(index: number) => void>(() => {});
 
@@ -51,7 +57,10 @@ export default function ScrollyCanvas({ containerRef }: Props) {
       loadingRef.current.delete(i);
       if (i === currentFrameRef.current) scheduleFrameRef.current(i);
     };
-    img.onerror = () => loadingRef.current.delete(i);
+    img.onerror = () => {
+      loadingRef.current.delete(i);
+      imagesRef.current[i] = undefined;
+    };
     imagesRef.current[i] = img;
   }, []);
 
@@ -137,46 +146,71 @@ export default function ScrollyCanvas({ containerRef }: Props) {
     if (!canvas) return;
 
     const setSize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      if (canvas.width !== w || canvas.height !== h) {
+        canvas.width = w;
+        canvas.height = h;
+      }
       drawFrame(currentFrameRef.current);
     };
 
     setSize();
     window.addEventListener("resize", setSize);
+    window.addEventListener("orientationchange", setSize);
 
     imagesRef.current = new Array(TOTAL_FRAMES);
     preloadAround(0);
     scheduleFrame(0);
 
-    // Load remaining frames when the browser is idle (avoids main-thread freeze)
-    let next = PRELOAD_AHEAD + 1;
-    const loadNextIdle = () => {
-      if (next > END_FRAME) return;
-      ensureFrameLoaded(next);
-      next += 1;
-      if (typeof requestIdleCallback !== "undefined") {
-        requestIdleCallback(loadNextIdle, { timeout: 2000 });
-      } else {
-        setTimeout(loadNextIdle, 50);
+    // Eager batched preload — idle loading is too slow in production / on mobile
+    let next = 0;
+    let cancelled = false;
+    const loadBatch = () => {
+      if (cancelled || next > END_FRAME) return;
+      const end = Math.min(END_FRAME, next + PRELOAD_BATCH - 1);
+      for (let i = next; i <= end; i++) ensureFrameLoaded(i);
+      next = end + 1;
+      if (next <= END_FRAME) {
+        if (typeof requestIdleCallback !== "undefined") {
+          requestIdleCallback(loadBatch, { timeout: 400 });
+        } else {
+          setTimeout(loadBatch, 16);
+        }
       }
     };
-    if (typeof requestIdleCallback !== "undefined") {
-      requestIdleCallback(loadNextIdle, { timeout: 2000 });
-    } else {
-      setTimeout(loadNextIdle, 200);
-    }
+    loadBatch();
+
+    // Sync frame if page restored mid-scroll
+    const sync = () => {
+      const latest = frameIndex.get();
+      const idx = Math.round(Math.max(0, Math.min(END_FRAME, latest)));
+      goToFrame(idx);
+    };
+    sync();
+    const t = window.setTimeout(sync, 100);
 
     return () => {
+      cancelled = true;
+      window.clearTimeout(t);
       window.removeEventListener("resize", setSize);
+      window.removeEventListener("orientationchange", setSize);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [drawFrame, preloadAround, ensureFrameLoaded, scheduleFrame]);
+  }, [
+    drawFrame,
+    preloadAround,
+    ensureFrameLoaded,
+    scheduleFrame,
+    frameIndex,
+    goToFrame,
+  ]);
 
   return (
     <canvas
       ref={canvasRef}
       className="absolute inset-0 block h-full w-full"
+      aria-hidden
     />
   );
 }

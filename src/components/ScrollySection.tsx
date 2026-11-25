@@ -5,10 +5,11 @@ import ScrollyCanvas from "./ScrollyCanvas";
 import Overlay from "./Overlay";
 
 /**
- * Scrub length only. Progress 1 === last frame + My Stack === sticky unpin,
- * so the next scroll moves text + images up with the page.
+ * Tall enough for a smooth scrub to the final portrait, then sticky unpins
+ * and the rest of the page scrolls up normally.
+ * Uses dvh where supported so mobile browser chrome doesn't break the pin.
  */
-const SCROLLY_HEIGHT_VH = 450;
+const SCROLLY_HEIGHT = "min(580vh, 5200px)";
 
 export default function ScrollySection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -16,11 +17,10 @@ export default function ScrollySection() {
   return (
     <div
       ref={containerRef}
-      className="relative"
-      style={{ height: `${SCROLLY_HEIGHT_VH}vh` }}
+      className="relative w-full"
+      style={{ height: SCROLLY_HEIGHT }}
     >
-      {/* One sticky viewport: canvas + text. Unpinning scrolls the images up too. */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      <div className="sticky top-0 z-0 h-[100dvh] min-h-[100svh] w-full overflow-hidden bg-[#0a0f1e]">
         <ScrollyCanvas containerRef={containerRef} />
         <Overlay containerRef={containerRef} />
       </div>

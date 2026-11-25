@@ -25,6 +25,8 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--bg);
+  /* Avoid iOS rubber-band / overscroll glitches on sticky hero */
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -32,6 +34,7 @@ body {
   color: var(--text);
   font-family: var(--font-space-grotesk), system-ui, sans-serif;
   overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
 
 /* Respect reduced motion */

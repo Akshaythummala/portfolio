@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useSpring,
-} from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 interface TextBlockProps {
   children: React.ReactNode;
@@ -32,12 +27,12 @@ function TextBlock({
       : [enterAt - 0.07, enterAt, exitAt, Math.min(1, exitAt + 0.06)],
     exitAt >= 1 ? [0, 1, 1] : [0, 1, 1, 0]
   );
+  // Direct transform — spring lag fights scroll-scrub and feels worse in production
   const y = useTransform(
     scrollYProgress,
-    [enterAt - 0.1, exitAt + 0.1],
+    [enterAt - 0.1, Math.min(1, exitAt + 0.1)],
     [parallaxStrength, -parallaxStrength]
   );
-  const smoothY = useSpring(y, { stiffness: 80, damping: 20 });
 
   const alignClass = {
     center: "justify-center items-center text-center",
@@ -47,7 +42,7 @@ function TextBlock({
 
   return (
     <motion.div
-      style={{ opacity, y: smoothY }}
+      style={{ opacity, y }}
       className={`absolute inset-0 flex ${alignClass} pointer-events-none`}
     >
       <div className="max-w-2xl px-4">{children}</div>
@@ -58,7 +53,7 @@ function TextBlock({
 export default function Overlay({
   containerRef,
 }: {
-  containerRef: React.RefObject<HTMLDivElement>;
+  containerRef: React.RefObject<HTMLDivElement | null>;
 }) {
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -113,13 +108,13 @@ export default function Overlay({
         </p>
       </TextBlock>
 
-      {/* Final beat — freezes with last image; sticky then unpins and scrolls up */}
+      {/* Final beat — lands with last portrait, stays until sticky unpins */}
       <TextBlock
         align="right"
         scrollYProgress={scrollYProgress}
-        enterAt={0.62}
+        enterAt={0.72}
         exitAt={1}
-        parallaxStrength={40}
+        parallaxStrength={30}
       >
         <p className="text-[10px] tracking-[0.4em] uppercase text-accent mb-3 font-medium font-body">
           My stack
